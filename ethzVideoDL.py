@@ -3,19 +3,79 @@ from datetime import datetime
 import os
 import requests
 import concurrent.futures
+from enum import Enum, unique
+
 
 # Ask the user for the URL
 print()
 url = input("Enter the URL of the Lecture: ")
 
-if url.endswith('.html'):
-    url = url[:-5] + '.rss.xml?quality=HIGH'
-elif url.endswith('/'):
-    url = url + 'rss.xml?quality=HIGH'
-elif '.rss.xml' in url:
-    url = url
-else:
-    url = url + '.rss.xml?quality=HIGH'
+if url.startswith("http:"):
+    url = "https" + url[4:]
+if url.startswith("video."):
+    url = "https://" + url
+
+def invalidURL():
+    print("Invalid URL.")
+    print("It should start with 'https://video.ethz.ch/lectures/' and end in the number of the lecture")
+    exit()
+
+# check if the input URL is valid
+if not url.startswith("https://video.ethz.ch/lectures/"):
+    invalidURL()
+
+# extract the course code semester and year from the URL
+parts = url.split("/")
+try:
+    i = parts.index("lectures")
+except ValueError():
+    invalidURL()
+if len(parts) < i+5:
+    invalidURL()
+department = parts[i+1]
+year = parts[i+2]
+semester = parts[i+3]
+course_code = parts[i+4]
+
+course_code = course_code.split(".")[0]
+# create the RSS feed URL using the extracted course code and semester
+url = f"https://video.ethz.ch/lectures/{department}/{year}/{semester}/{course_code}.rss.xml"
+
+
+@unique
+class Quality(Enum):
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    INVALID = "INVALID"
+
+    def __str__(self):
+        return f'?quality={self.value}'
+
+    @classmethod
+    def from_str(cls, s: str):
+        s = s.capitalize()
+        if len(s) == 0:
+            return cls(Quality.HIGH)
+        if s[0] == 'H':
+            return cls(Quality.HIGH)
+        if s[0] == 'M':
+            return cls(Quality.MEDIUM)
+        if s[0] == 'L':
+            return cls(Quality.LOW)
+        return cls(Quality.INVALID)
+
+# Ask the user for desired video quality
+while True:
+    response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
+    quality = Quality.from_str(response)
+    if not quality == Quality.INVALID:
+        break
+    else:
+        print("Invalid quality. Please enter one of 'HIGH', 'MEDIUM', 'LOW', 'H', 'M' or 'L'.")
+
+url = url + str(quality)
+
 
 # Navigate to the URL and extract the RSS XML data
 xml_data = requests.get(url, headers={'User-Agent': 'Custom'}).content
@@ -24,7 +84,7 @@ xml_data = requests.get(url, headers={'User-Agent': 'Custom'}).content
 tree = ET.fromstring(xml_data)
 
 # Get the title of the feed
-title = tree.find('.//title').text.strip().replace(' ', '_')
+title = tree.find('.//title').text.strip()
 
 description = tree.find('.//description').text.strip().split("<")[0]
 
@@ -40,22 +100,37 @@ print()
 print('***********************************************')
 print()
 
-# Create the directory for the files
-if not os.path.exists(title):
-    os.makedirs(title)
 
-folder = os.path.join(title)
-downloaded_file = os.path.join(title, ".downloaded_files.txt")
-with open(downloaded_file, "w") as f:
-    for file_name in os.listdir(folder):
-        if not file_name.endswith('.mp4'):
-            continue
-        if os.path.isfile(os.path.join(folder, file_name)):
-            f.write(file_name + "\n")
+# Set default folder path to the execution directory of the script
+default_path = os.join(os.getcwd(), title.replace(' ', '_'))
 
-# Read the list of already downloaded files
-with open(downloaded_file, 'r') as f:
-    downloaded_files = set(line.strip() for line in f)
+# Ask user to input folder path
+folder = input("Enter folder in which to save the videos ({default_path}): ")
+
+# Use default path if user doesn't input anything
+if not folder:
+    folder = default
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+# Check if folder path exists
+if not os.path.exists(folder):
+    create_folder = input("Folder path does not exist. Do you want to create it? (y/n): ")
+    if create_folder.lower() == 'y':
+        os.makedirs(folder)
+    else:
+        print("Exiting script.")
+        exit()
+
+
+# Get list of already downloaded Files
+downloaded_files = set()
+for file_name in os.listdir(folder):
+    if not file_name.endswith('.mp4'):
+        continue
+    if os.path.isfile(os.path.join(folder, file_name)):
+        downloaded_files.add(file_name)
+
 
 # Loop through all the items in the feed and create a list of download tasks
 download_tasks = []
@@ -77,6 +152,7 @@ for item in items:
 
 print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)) + ' already downloaded.')
 
+# Ask the user for confirmation to download
 while len(download_tasks) > 0:
     response = input("Do you want to proceed? (y/n): ")
     if response.lower() == 'y':
@@ -104,4 +180,4 @@ def download_task(task):
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
     executor.map(download_task, download_tasks)
 
-print(f"Downloaded {len(download_tasks)} new files to folder {title}.")
+print(f"Downloaded {len(download_tasks)} new files to folder {folder}.")
