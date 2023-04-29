@@ -102,14 +102,14 @@ print()
 
 
 # Set default folder path to the execution directory of the script
-default_path = os.join(os.getcwd(), title.replace(' ', '_'))
+default_path = os.path.join(os.getcwd(), title.replace(' ', '_'))
 
 # Ask user to input folder path
-folder = input("Enter folder in which to save the videos ({default_path}): ")
+folder = input(f"Enter folder in which to save the videos ({default_path}): ")
 
 # Use default path if user doesn't input anything
 if not folder:
-    folder = default
+    folder = default_path
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -142,9 +142,9 @@ for item in items:
     # Get the publication date of the item
     pub_date_str = item.find('pubDate').text
     pub_date = datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%MZ")
-    
+
     # Create the filename
-    filename = pub_date.strftime("%Y-%m-%d--%H-%M") + ".mp4"
+    filename = pub_date.strftime("%Y-%m-%d--%H-%M--id_") + mp4_url.split('/')[-2] + ".mp4"
     
     # Add the download task to the list if the file has not been downloaded yet
     if filename not in downloaded_files:
@@ -167,15 +167,12 @@ while len(download_tasks) > 0:
 # Download the mp4 files in parallel using multiple threads
 def download_task(task):
     mp4_url, filename = task
+    path_to_file = os.path.join(folder, filename)
     print(f'Downloading {filename}')
-    with open(filename, 'wb') as f:
+    with open(path_to_file, 'wb') as f:
         response = requests.get(mp4_url)
         f.write(response.content)
     print(f'Downloaded {filename}')
-
-    # Add the downloaded file to the list
-    with open(downloaded_file, 'a') as f:
-        f.write(filename + '\n')
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
     executor.map(download_task, download_tasks)
