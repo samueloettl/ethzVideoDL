@@ -138,7 +138,7 @@ items = tree.findall('.//item')
 for item in items:
     # Get the URL of the mp4 file
     mp4_url = item.find('enclosure').attrib['url']
-    
+
     # Get the publication date of the item
     pub_date_str = item.find('pubDate').text
     pub_date = datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%MZ")
@@ -169,9 +169,11 @@ def download_task(task):
     mp4_url, filename = task
     path_to_file = os.path.join(folder, filename)
     print(f'Downloading {filename}')
-    with open(path_to_file, 'wb') as f:
-        response = requests.get(mp4_url)
-        f.write(response.content)
+    with requests.get(mp4_url, stream=True) as r:
+        r.raise_for_status()
+        with open(path_to_file, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
     print(f'Downloaded {filename}')
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
