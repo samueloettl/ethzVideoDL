@@ -171,10 +171,10 @@ def download_task(task):
     print(f'Downloading {filename}')
     with requests.get(mp4_url, stream=True) as r:
         r.raise_for_status()
-        with open(os.path.join(path_to_file, ".part"), 'wb') as f:
+        with open(path_to_file+".part", 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-    os.rename(os.path.join(path_to_file, ".part"), path_to_file)
+    os.rename(path_to_file+".part", path_to_file)
     print(f'Downloaded {filename}')
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
