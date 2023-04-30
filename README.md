@@ -1,6 +1,9 @@
 # ethzVideoDL
 A script to automatically download all videos of an ETH lecture.
 
+## ⚠️Important⚠️
+Please keep the strain you put on ETH servers minimal. Consider limiting the bandwidth and running the script at off hours.
+
 ## How to use
 ### Requirements
 The script requires [Python 3](https://www.python.org/downloads/) and the requests library.
