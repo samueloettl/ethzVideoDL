@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-u", "--url", type=str, help='Enter the URL of the Lecture: It should start with https://video.ethz.ch/lectures/ and end in the number of the lecture')
 parser.add_argument("-p", "--path", type=str, help='Put in the absolute path of the directory in which the videos will be saved')
 parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
+parser.add_argument("-y", action='store_true', help='Proceeds to the download without asking')
 args = parser.parse_args()
 
 print(args)
@@ -83,9 +84,8 @@ class Quality(Enum):
 overwrite_quality = False
 
 while True:
-    if not overwrite_quality:
-        response = args.quality
-    if not args.quality: 
+    response = args.quality
+    if overwrite_quality or not args.quality: 
         response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
     quality = Quality.from_str(response)
     if not quality == Quality.INVALID:
@@ -174,8 +174,8 @@ for item in items:
 
 print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)) + ' already downloaded.')
 
-# Ask the user for confirmation to download
-while len(download_tasks) > 0:
+# Ask the user for confirmation to download, skip if -y was supplied
+while not args.y and len(download_tasks) > 0:
     response = input("Do you want to proceed? (y/n): ")
     if response.lower() == 'y':
         print("Proceeding...")
