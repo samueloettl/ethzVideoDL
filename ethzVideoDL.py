@@ -3,12 +3,25 @@ from datetime import datetime
 import os
 import requests
 import concurrent.futures
+import argparse
 from enum import Enum, unique
 
+# Parse the script arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-u", "--url", type=str, help='Enter the URL of the Lecture: It should start with https://video.ethz.ch/lectures/ and end in the number of the lecture')
+parser.add_argument("-p", "--path", type=str, help='Put in the absolute path of the directory in which the videos will be saved')
+parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
+args = parser.parse_args()
 
-# Ask the user for the URL
+print(args)
+
 print()
-url = input("Enter the URL of the Lecture: ")
+
+
+# Get the URL
+url = args.url
+if not args.url:
+    url = input("Enter the URL of the Lecture: ")
 
 if url.startswith("http:"):
     url = "https" + url[4:]
@@ -67,7 +80,9 @@ class Quality(Enum):
 
 # Ask the user for desired video quality
 while True:
-    response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
+    response = args.quality
+    if not args.quality: 
+        response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
     quality = Quality.from_str(response)
     if not quality == Quality.INVALID:
         break
@@ -105,7 +120,9 @@ print()
 default_path = os.path.join(os.getcwd(), title.replace(' ', '_'))
 
 # Ask user to input folder path
-folder = input(f"Enter folder in which to save the videos ({default_path}): ")
+folder = args.path
+if not args.path:
+    folder = input(f"Enter folder in which to save the videos ({default_path}): ")
 
 # Use default path if user doesn't input anything
 if not folder:
