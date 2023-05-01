@@ -18,3 +18,9 @@ cd /folder/of/the/script
 python ethzVideoDL.py
 ```
 Alternatively right-click --> open with python (if your OS supports it).
+
+### Command Line Arguments
+To see a list of available command line arguments, use
+```bash
+python ethzVideoDL.py --help
+```
