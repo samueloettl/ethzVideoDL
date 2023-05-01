@@ -79,14 +79,19 @@ class Quality(Enum):
         return cls(Quality.INVALID)
 
 # Ask the user for desired video quality
+
+overwrite_quality = False
+
 while True:
-    response = args.quality
+    if not overwrite_quality:
+        response = args.quality
     if not args.quality: 
         response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
     quality = Quality.from_str(response)
     if not quality == Quality.INVALID:
         break
     else:
+        overwrite_quality = True
         print("Invalid quality. Please enter one of 'HIGH', 'MEDIUM', 'LOW', 'H', 'M' or 'L'.")
 
 url = url + str(quality)
