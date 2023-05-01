@@ -8,7 +8,7 @@ Please keep the strain you put on ETH servers minimal. Consider limiting the ban
 ### Requirements
 The script requires [Python 3](https://www.python.org/downloads/) and the requests library.
 ```bash
-python -m pip install requests
+python -m pip install requests --user
 ```
 
 ### Running the script
