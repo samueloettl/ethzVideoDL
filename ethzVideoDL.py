@@ -8,21 +8,20 @@ from enum import Enum, unique
 
 # Parse the script arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-u", "--url", type=str, help='Enter the URL of the Lecture: It should start with https://video.ethz.ch/lectures/ and end in the number of the lecture')
+parser.add_argument("-r", "--rss", type=str, help='Enter the RSS link of the lecture: You can get it by opening the lecture in your browser and opening "Media"')
 parser.add_argument("-p", "--path", type=str, help='Put in the absolute path of the directory in which the videos will be saved')
-parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
+#parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
 parser.add_argument("-y", action='store_true', help='Proceeds to the download without asking')
 args = parser.parse_args()
 
-print(args)
+#print(args)
 
 print()
 
-
 # Get the URL
-url = args.url
-if not args.url:
-    url = input("Enter the URL of the Lecture: ")
+url = args.rss
+if not args.rss:
+    url = input("Enter the RSS link of the desired videos: ")
 
 if url.startswith("http:"):
     url = "https" + url[4:]
@@ -31,71 +30,12 @@ if url.startswith("video."):
 
 def invalidURL():
     print("Invalid URL.")
-    print("It should start with 'https://video.ethz.ch/lectures/' and end in the number of the lecture")
+    print("It should start with 'https://video.ethz.ch/lectures/' and end in the quality of the lecture")
     exit()
 
 # check if the input URL is valid
-if not url.startswith("https://video.ethz.ch/lectures/"):
+if not url.startswith("https://video.ethz.ch/") or not (url.endswith("&quality=LOW") or url.endswith("&quality=MEDIUM") or url.endswith("&quality=HIGH")):
     invalidURL()
-
-# extract the course code semester and year from the URL
-parts = url.split("/")
-try:
-    i = parts.index("lectures")
-except ValueError():
-    invalidURL()
-if len(parts) < i+5:
-    invalidURL()
-department = parts[i+1]
-year = parts[i+2]
-semester = parts[i+3]
-course_code = parts[i+4]
-
-course_code = course_code.split(".")[0]
-# create the RSS feed URL using the extracted course code and semester
-url = f"https://video.ethz.ch/lectures/{department}/{year}/{semester}/{course_code}.rss.xml"
-
-
-@unique
-class Quality(Enum):
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-    INVALID = "INVALID"
-
-    def __str__(self):
-        return f'?quality={self.value}'
-
-    @classmethod
-    def from_str(cls, s: str):
-        s = s.capitalize()
-        if len(s) == 0:
-            return cls(Quality.HIGH)
-        if s[0] == 'H':
-            return cls(Quality.HIGH)
-        if s[0] == 'M':
-            return cls(Quality.MEDIUM)
-        if s[0] == 'L':
-            return cls(Quality.LOW)
-        return cls(Quality.INVALID)
-
-# Ask the user for desired video quality
-
-overwrite_quality = False
-
-while True:
-    response = args.quality
-    if overwrite_quality or not args.quality: 
-        response = input("Please enter video quality ('HIGH' (default), 'MEDIUM' or 'LOW'): ")
-    quality = Quality.from_str(response)
-    if not quality == Quality.INVALID:
-        break
-    else:
-        overwrite_quality = True
-        print("Invalid quality. Please enter one of 'HIGH', 'MEDIUM', 'LOW', 'H', 'M' or 'L'.")
-
-url = url + str(quality)
-
 
 # Navigate to the URL and extract the RSS XML data
 xml_data = requests.get(url, headers={'User-Agent': 'Custom'}).content
