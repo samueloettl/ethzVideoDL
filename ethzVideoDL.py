@@ -12,6 +12,7 @@ parser.add_argument("-r", "--rss", type=str, help='Enter the RSS link of the lec
 parser.add_argument("-p", "--path", type=str, help='Put in the absolute path of the directory in which the videos will be saved')
 #parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
 parser.add_argument("-y", action='store_true', help='Proceeds to the download without asking')
+parser.add_argument("-all", action='store_true', help='Downloads all file formats and not just .mp4')
 args = parser.parse_args()
 
 #print(args)
@@ -88,8 +89,6 @@ if not os.path.exists(folder):
 # Get list of already downloaded Files
 downloaded_files = set()
 for file_name in os.listdir(folder):
-    if not file_name.endswith('.mp4'):
-        continue
     if os.path.isfile(os.path.join(folder, file_name)):
         downloaded_files.add(file_name)
 
@@ -98,21 +97,24 @@ for file_name in os.listdir(folder):
 download_tasks = []
 items = tree.findall('.//item')
 for item in items:
-    # Get the URL of the mp4 file
+    # Get the URL of the file
     mp4_url = item.find('enclosure').attrib['url']
+
+    if not args.all and not mp4_url.endswith(".mp4"):
+        continue
 
     # Get the publication date of the item
     pub_date_str = item.find('pubDate').text
     pub_date = datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%MZ")
 
     # Create the filename
-    filename = pub_date.strftime("%Y-%m-%d--%H-%M--id_") + mp4_url.split('/')[-2] + ".mp4"
+    filename = pub_date.strftime("%Y-%m-%d--%H-%M--id_") + mp4_url.split('/')[-2] + "." + mp4_url.split(".")[-1]
     
     # Add the download task to the list if the file has not been downloaded yet
     if filename not in downloaded_files:
         download_tasks.append((mp4_url, filename))
 
-print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)) + ' already downloaded.')
+print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)) + (' were ignored because they are either present or not a mp4 file. (Look at the -all option if you want to download all filetypes.)' if not args.all else " already downloaded."))
 
 # Ask the user for confirmation to download, skip if -y was supplied
 while not args.y and len(download_tasks) > 0:
