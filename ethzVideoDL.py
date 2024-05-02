@@ -95,12 +95,14 @@ for file_name in os.listdir(folder):
 
 # Loop through all the items in the feed and create a list of download tasks
 download_tasks = []
+notMP4 = 0
 items = tree.findall('.//item')
 for item in items:
     # Get the URL of the file
     mp4_url = item.find('enclosure').attrib['url']
 
     if not args.all and not mp4_url.endswith(".mp4"):
+        notMP4 += 1
         continue
 
     # Get the publication date of the item
@@ -114,7 +116,9 @@ for item in items:
     if filename not in downloaded_files:
         download_tasks.append((mp4_url, filename))
 
-print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)) + (' were ignored because they are either present or not a mp4 file. (Look at the -all option if you want to download all filetypes.)' if not args.all else " already downloaded."))
+print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)-notMP4) + " already downloaded.")
+if notMP4 and not args.all:
+    print(str(notMP4)+' mp4 file' + ('s were' if notMP4 != 1 else ' was') + ' ignored. (Look at the -all option if you want to download all filetypes.)')
 
 # Ask the user for confirmation to download, skip if -y was supplied
 while not args.y and len(download_tasks) > 0:
