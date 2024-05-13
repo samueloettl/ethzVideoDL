@@ -118,7 +118,7 @@ for item in items:
 
 print('Found ' + str(len(download_tasks)) + ' new Recordings and ' + str(len(items)-len(download_tasks)-notMP4) + " already downloaded.")
 if notMP4 and not args.all:
-    print(str(notMP4)+' mp4 file' + ('s were' if notMP4 != 1 else ' was') + ' ignored. (Look at the -all option if you want to download all filetypes.)')
+    print(str(notMP4)+' non mp4 file' + ('s were' if notMP4 != 1 else ' was') + ' ignored. (Look at the -all option if you want to download all filetypes.)')
 
 # Ask the user for confirmation to download, skip if -y was supplied
 while not args.y and len(download_tasks) > 0:
