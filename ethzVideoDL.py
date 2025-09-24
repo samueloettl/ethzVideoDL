@@ -8,7 +8,7 @@ from enum import Enum, unique
 
 # Parse the script arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--rss", type=str, help='Enter the RSS link of the lecture: You can get it by opening the lecture in your browser and opening "Media"')
+parser.add_argument("-r", "--rss", type=str, help='Enter the RSS link of the lecture: Open the lecture in your browser, find it under Share->RSS.')
 parser.add_argument("-p", "--path", type=str, help='Put in the absolute path of the directory in which the videos will be saved')
 #parser.add_argument("-q", "--quality", type=str, help='Pass the quality as LOW, MEDIUM or HIGH')
 parser.add_argument("-y", action='store_true', help='Proceeds to the download without asking')
@@ -22,7 +22,7 @@ print()
 # Get the URL
 url = args.rss
 if not args.rss:
-    url = input("Enter the RSS link of the desired videos: ")
+    url = input("Enter the RSS link of the desired videos\nOpen the lecture in your browser, find it under Share->RSS: ")
 
 if url.startswith("http:"):
     url = "https" + url[4:]
