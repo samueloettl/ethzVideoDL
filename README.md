@@ -1,7 +1,8 @@
 # ethzVideoDL
-A script to automatically download all videos of an ETH lecture.
+A script to automatically download all videos of an ETH lecture in the default quality.
+Currently only the default quality is supported. This appears to usually be 1080p.
 
-## ⚠️Important⚠️
+## ETH Resources
 Please keep the strain you put on ETH servers minimal. Consider limiting the bandwidth and running the script at off hours.
 
 ## How to use
