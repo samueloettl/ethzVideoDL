@@ -22,7 +22,7 @@ print()
 # Get the URL
 url = args.rss
 if not args.rss:
-    url = input("Enter the RSS link of the desired videos\nOpen the lecture in your browser, find it under Share->RSS: ")
+    url = input("Enter the RSS link of the desired videos.\nOpen the lecture in your browser, find it under Share->RSS: ")
 
 if url.startswith("http:"):
     url = "https" + url[4:]
