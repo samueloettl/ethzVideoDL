@@ -31,15 +31,16 @@ if url.startswith("video."):
 
 def invalidURL():
     print("Invalid URL.")
-    print("It should start with 'https://video.ethz.ch/lectures/' and end in the quality of the lecture")
+    print("It should start with 'https://video.ethz.ch/~rss/series/' and end in a random looking string.")
+    print("Go to the lecture on the website and click on Share>RSS.")
     exit()
 
 # check if the input URL is valid
-if not url.startswith("https://video.ethz.ch/") or not (url.endswith("&quality=LOW") or url.endswith("&quality=MEDIUM") or url.endswith("&quality=HIGH")):
+if not url.startswith("https://video.ethz.ch/~rss/series/"):
     invalidURL()
 
 # Navigate to the URL and extract the RSS XML data
-xml_data = requests.get(url, headers={'User-Agent': 'Custom'}).content
+xml_data = requests.get(url).content
 
 # Parse the RSS feed
 tree = ET.fromstring(xml_data)
@@ -60,7 +61,6 @@ print(description)
 print()
 print('***********************************************')
 print()
-
 
 # Set default folder path to the execution directory of the script
 default_path = os.path.join(os.getcwd(), title.replace(' ', '_'))
@@ -107,7 +107,7 @@ for item in items:
 
     # Get the publication date of the item
     pub_date_str = item.find('pubDate').text
-    pub_date = datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%MZ")
+    pub_date = datetime.strptime(pub_date_str, "%a, %d %b %Y %H:%M:%S %z")
 
     # Create the filename
     filename = pub_date.strftime("%Y-%m-%d--%H-%M--id_") + mp4_url.split('/')[-2] + "." + mp4_url.split(".")[-1]
